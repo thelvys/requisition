@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db.models.signals import post_save
 
@@ -24,7 +25,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         unique=True,
         max_length=255,
@@ -43,17 +44,35 @@ class CustomUser(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
     
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class Department(models.Model):
+    dep_name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+    main_dep = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    supervisor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="departments")
+    #members = models.ManyToManyField(settings.AUTH_USER_MODEL, through=Profile, related_name='departments')  # Utilisation de Profile comme table intermédiaire pour stocker le rôle de l'utilisateur dans le département
+    created_at = models.DateTimeField(auto_now_add=True, auto_now=False)
+    modified_at = models.DateTimeField(auto_now=True, auto_now_add=False)
+
+    def __str__(self):
+        return self.dep_name
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
-    #user_dep = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
+    user_dep = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
     #user_pos = models.ForeignKey(Position, on_delete=models.SET_NULL, blank=True, null=True)
 
     #class Meta:
     #    unique_together = ['user','user_dep', 'user_pos']
     
     def __str__(self):
-        return self.user.email
+        return self.user.full_name
+
+Department.members = models.ManyToManyField(settings.AUTH_USER_MODEL, through=Profile, related_name='departments')
 
 
 def post_save_receiver(sender, instance, created, **kwargs):
@@ -61,3 +80,5 @@ def post_save_receiver(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 post_save.connect(post_save_receiver, sender=settings.AUTH_USER_MODEL)
+
+
