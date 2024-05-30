@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if requisition %}Modifier{% else %}Créer{% endif %} une Réquisition{% endblock %}
+
+{% block content %}
+    <h2>{% if requisition %}Modifier{% else %}Créer{% endif %} une Réquisition</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Enregistrer</button>
+    </form>
+{% endblock %}
