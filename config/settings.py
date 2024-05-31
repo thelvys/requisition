@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'treebeard',
     'accounts',
     'djmoney',
+    'requisition',
+    'inventory',
+    'cashflow',
 ]
 
 MIDDLEWARE = [
