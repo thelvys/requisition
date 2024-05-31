@@ -1,18 +1,15 @@
 import uuid
 from django.db import models
-from tree_queries.query import TreeNode  # Utilisez django-mptt pour la hiérarchie
+from treebeard.mp_tree import MP_Node
 from djmoney.models.fields import MoneyField
 
 from config import settings
 
 
-class AccountGroup(TreeNode):
-    """Modèle pour regrouper les comptes de manière hiérarchique."""
+class AccountGroup(MP_Node):
+    """Modèle pour regrouper les comptes de manière hiérarchique (Materialized Path)."""
     name = models.CharField(max_length=100, verbose_name="Nom du groupe")
-    #parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name="Groupe parent")
-
-    #class MPTTMeta:
-    #    order_insertion_by = ['name']
+    node_order_by = ['name']  # Trie les nœuds par ordre alphabétique
 
     def __str__(self):
         return self.name
@@ -37,6 +34,7 @@ class CashAccount(models.Model):
 
     def __str__(self):
         return f"{self.account_number} - {self.name} ({self.currency})"
+    
 
 class AccountAssignmentHistory(models.Model):
     """Enregistre l'historique des attributions de comptes."""
