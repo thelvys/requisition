@@ -40,9 +40,10 @@ INSTALLED_APPS = [
     'treebeard',
     'accounts',
     'djmoney',
-    'requisition',
+    'requisitions',
     'inventory',
     'cashflow',
+    'config',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,10 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "static"
+
+CURRENCY_CHOICES = [
+    ('USD', 'US Dollar'),
+    ('EUR', 'Euro'),
+    ('CDF', 'Franc Congolais'),
+    # Ajoutez d'autres devises selon vos besoins
+]
