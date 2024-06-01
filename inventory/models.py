@@ -267,3 +267,85 @@ class StockTransfer(models.Model):
         super().save(*args, **kwargs)
 
 
+class Machine(models.Model):
+    """Machine utilisée dans le processus de production."""
+    name = models.CharField(max_length=100, verbose_name="Nom")
+    code = models.CharField(max_length=50, unique=True, verbose_name="Code")
+    description = models.TextField(blank=True, verbose_name="Description")
+
+    class Meta:
+        verbose_name = "Machine"
+        verbose_name_plural = "Machines"
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+    
+
+class ProductionOrder(models.Model):
+    """Ordre de production d'un produit fini."""
+    order_number = models.CharField(max_length=50, unique=True, verbose_name="Numéro de l'ordre")
+    product = models.ForeignKey(Item, on_delete=models.CASCADE, verbose_name="Produit fini")
+    quantity = models.PositiveIntegerField(verbose_name="Quantité à produire")
+    start_date = models.DateField(verbose_name="Date de début")
+    due_date = models.DateField(verbose_name="Date d'échéance")
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'En attente'),
+            ('in_progress', 'En cours'),
+            ('completed', 'Terminé'),
+            ('cancelled', 'Annulé'),
+        ],
+        default='pending',
+        verbose_name="Statut"
+    )
+
+    class Meta:
+        verbose_name = "Ordre de production"
+        verbose_name_plural = "Ordres de production"
+
+    def __str__(self):
+        return f"Ordre de production {self.order_number} - {self.product}"
+
+
+class BillOfMaterials(models.Model):
+    """Nomenclature (BOM) définissant les composants d'un produit fini."""
+    product = models.OneToOneField(Item, on_delete=models.CASCADE, related_name='bill_of_materials', verbose_name="Produit fini")
+
+    class Meta:
+        verbose_name = "Nomenclature"
+        verbose_name_plural = "Nomenclatures"
+
+    def __str__(self):
+        return f"BOM pour {self.product}"
+
+
+class BillOfMaterialsItem(models.Model):
+    """Ligne d'une nomenclature, associant un composant et sa quantité."""
+    bill_of_materials = models.ForeignKey(BillOfMaterials, on_delete=models.CASCADE, related_name='items', verbose_name="Nomenclature")
+    component = models.ForeignKey(Item, on_delete=models.CASCADE, verbose_name="Composant")
+    quantity = models.PositiveIntegerField(verbose_name="Quantité")
+
+    class Meta:
+        verbose_name = "Ligne de nomenclature"
+        verbose_name_plural = "Lignes de nomenclature"
+
+    def __str__(self):
+        return f"{self.quantity} x {self.component} pour {self.bill_of_materials.product}"
+
+
+
+class ProductionStep(models.Model):
+    """Étape de production d'un produit fini."""
+    production_order = models.ForeignKey(ProductionOrder, on_delete=models.CASCADE, verbose_name="Ordre de production")
+    description = models.CharField(max_length=255, verbose_name="Description")
+    machine = models.ForeignKey(Machine, on_delete=models.PROTECT, verbose_name="Machine")  # Nouvelle relation
+    estimated_time = models.DurationField(verbose_name="Temps estimé")
+    completed = models.BooleanField(default=False, verbose_name="Terminé")
+
+    class Meta:
+        verbose_name = "Étape de production"
+        verbose_name_plural = "Étapes de production"
+
+    def __str__(self):
+        return f"{self.description} (sur {self.machine})"

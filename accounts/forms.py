@@ -1,15 +1,26 @@
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django import forms
+from .models import CustomUser, Department, Profile
 
-from .models import CustomUser
-
-
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserCreationForm(forms.ModelForm):
+    """Formulaire pour la création d'un utilisateur personnalisé."""
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        fields = ('email', 'password')  # Assurez-vous d'ajouter les champs nécessaires
 
-
-class CustomUserChangeForm(UserChangeForm):
+class CustomUserChangeForm(forms.ModelForm):
+    """Formulaire pour la modification d'un utilisateur personnalisé."""
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        fields = ('email', 'is_active', 'is_staff', 'is_admin')
+
+class DepartmentForm(forms.ModelForm):
+    """Formulaire pour la création/modification d'un département."""
+    class Meta:
+        model = Department
+        fields = ('dep_name', 'description', 'main_dep', 'supervisor')
+
+class ProfileForm(forms.ModelForm):
+    """Formulaire pour la création/modification d'un profil."""
+    class Meta:
+        model = Profile
+        fields = ('user_dep',)

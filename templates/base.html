@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ERP - {% block title %}Home{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">  {# Lien vers votre fichier CSS #}
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'customuser_list' %}">Utilisateurs</a></li>
+                <li><a href="{% url 'department_list' %}">Départements</a></li>
+                <li><a href="{% url 'profile_list' %}">Profils</a></li>
+                {# Ajoutez d'autres liens de navigation ici #}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Mon application Django</p>
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>  {# Lien vers votre fichier JavaScript #}
+</body>
+</html>
