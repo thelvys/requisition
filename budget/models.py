@@ -30,14 +30,14 @@ class BudgetPeriod(models.Model):
 
 
 class Budget(models.Model):
-    """Modèle représentant un budget pour un centre de coût et une période."""
+    """Modèle représentant un budget pour un centre de coût, une période et une devise."""
 
     cost_center = models.ForeignKey('accounts.Department', on_delete=models.CASCADE, verbose_name="Centre de coût")
     period = models.ForeignKey(BudgetPeriod, on_delete=models.CASCADE, verbose_name="Période")
     amount = MoneyField(max_digits=19, decimal_places=2, default_currency='CDF', verbose_name="Montant budgété")
 
     class Meta:
-        unique_together = ('cost_center', 'period')
+        unique_together = ('cost_center', 'period', 'amount_currency')  # Ajoutez amount_currency à la contrainte
         verbose_name = "Budget"
         verbose_name_plural = "Budgets"
 
@@ -64,3 +64,9 @@ class RequisitionBudget(models.Model):
 
     def __str__(self):
         return f"Demande {self.requisition} liée au budget {self.budget_item.budget}"
+
+    def save(self, *args, **kwargs):
+        # Vérifiez si la devise de la demande correspond à celle du budget
+        if self.requisition.amount.currency != self.budget_item.budget.amount_currency:
+            raise ValueError("La devise de la demande doit correspondre à celle du budget.")
+        super().save(*args, **kwargs)
