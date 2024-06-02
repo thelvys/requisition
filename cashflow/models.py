@@ -89,3 +89,18 @@ class Payment(models.Model):
         # Assurez-vous que la devise du paiement correspond à celle du compte
         self.amount.currency = self.cash_account.currency
         super().save(*args, **kwargs)
+
+class CashFlowForecast(models.Model):
+    """Prévisions de flux de trésorerie pour une période et un compte."""
+    cash_account = models.ForeignKey('cashflow.CashAccount', on_delete=models.CASCADE, verbose_name="Compte")
+    period = models.ForeignKey('budget.BudgetPeriod', on_delete=models.CASCADE, verbose_name="Période")
+    inflow = MoneyField(max_digits=19, decimal_places=2, default_currency='CDF', verbose_name="Entrées prévues")
+    outflow = MoneyField(max_digits=19, decimal_places=2, default_currency='CDF', verbose_name="Sorties prévues")
+
+    class Meta:
+        unique_together = ('cash_account', 'period')
+        verbose_name = "Prévision de trésorerie"
+        verbose_name_plural = "Prévisions de trésorerie"
+
+    def __str__(self):
+        return f"Prévisions pour {self.cash_account} en {self.period}"

@@ -13,6 +13,7 @@ router.register(r'vehicles', VehicleViewSet)
 router.register(r'shipments', ShipmentViewSet)
 router.register(r'shipment-items', ShipmentItemViewSet)
 router.register(r'shipment-status-updates', ShipmentStatusUpdateViewSet)
+router.register(r'stock-thresholds', StockThresholdViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

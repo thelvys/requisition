@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from requisitions.serializers import RequisitionSerializer
-from .models import Budget, BudgetItem, BudgetPeriod, RequisitionBudget
+from .models import Budget, BudgetItem, BudgetPeriod, RequisitionBudget, Expense
 from groups.serializers import DepartmentSerializer, CategorySerializer  # Assurez-vous d'avoir des sérialiseurs pour Department et Category
 
 
@@ -33,4 +33,13 @@ class RequisitionBudgetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RequisitionBudget
+        fields = '__all__'
+
+
+class ExpenseSerializer(serializers.ModelSerializer):
+    requisition = RequisitionSerializer()
+    budget_item = BudgetItemSerializer()
+
+    class Meta:
+        model = Expense
         fields = '__all__'

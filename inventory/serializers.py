@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Supplier, Warehouse, Item, Stock, StockTransfer, Carrier, Vehicle, Shipment, ShipmentItem, ShipmentStatusUpdate
+from .models import StockThreshold, Supplier, Warehouse, Item, Stock, StockTransfer, Carrier, Vehicle, Shipment, ShipmentItem, ShipmentStatusUpdate
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,5 +75,12 @@ class ShipmentStatusUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShipmentStatusUpdate
+        fields = '__all__'
+
+class StockThresholdSerializer(serializers.ModelSerializer):
+    item = serializers.StringRelatedField()  # Affiche le nom de l'article
+
+    class Meta:
+        model = StockThreshold
         fields = '__all__'
 

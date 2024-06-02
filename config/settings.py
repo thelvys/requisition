@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'djmoney',
     'config',
     'accounts',
+    'groups',
     'requisitions',
     'accounting',
     'inventory',

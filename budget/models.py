@@ -79,3 +79,19 @@ class RequisitionBudget(models.Model):
             raise ValueError("Le montant de la demande dépasse le montant alloué dans le budget.")
 
         super().save(*args, **kwargs)
+
+
+class Expense(models.Model):
+    """Modèle pour enregistrer les dépenses."""
+    requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE, verbose_name="Demande")
+    budget_item = models.ForeignKey(BudgetItem, on_delete=models.PROTECT, verbose_name="Ligne budgétaire")
+    amount = MoneyField(max_digits=19, decimal_places=2, default_currency='CDF', verbose_name="Montant dépensé")
+    date = models.DateField(verbose_name="Date de la dépense")
+    description = models.TextField(blank=True, verbose_name="Description")
+
+    class Meta:
+        verbose_name = "Dépense"
+        verbose_name_plural = "Dépenses"
+
+    def __str__(self):
+        return f"Dépense de {self.amount} pour {self.requisition} le {self.date}"

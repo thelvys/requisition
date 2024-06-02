@@ -3,6 +3,7 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ValidationError 
 from djmoney.models.fields import MoneyField
 
 from config.models import ExchangeRate
@@ -208,6 +209,16 @@ class ShipmentItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.order_item.item} dans l'expédition {self.shipment}"
+    
+    def save(self, *args, **kwargs):
+        """Valide la quantité expédiée."""
+        if self.quantity <= 0:
+            raise ValueError("La quantité expédiée doit être supérieure à zéro.")
+
+        if self.quantity > self.order_item.quantity:
+            raise ValueError("La quantité expédiée ne peut pas dépasser la quantité commandée.")
+
+        super().save(*args, **kwargs)
 
 
 class ShipmentStatusUpdate(models.Model):
@@ -261,11 +272,39 @@ class StockTransfer(models.Model):
     def __str__(self):
         return f"Transfert de {self.quantity} x {self.item} de {self.from_warehouse} vers {self.to_warehouse}"
 
+    def clean(self):
+        """Validation personnalisée du modèle."""
+        if self.quantity <= 0:
+            raise ValidationError("La quantité doit être supérieure à zéro.")
+
+        if self.from_warehouse == self.to_warehouse:
+            raise ValidationError("L'entrepôt source et l'entrepôt de destination ne peuvent pas être les mêmes.")
+
+        try:
+            stock = Stock.objects.get(warehouse=self.from_warehouse, item=self.item)
+            if self.quantity > stock.quantity:
+                raise ValidationError("La quantité à transférer dépasse le stock disponible.")
+        except Stock.DoesNotExist:
+            raise ValidationError(f"Aucun stock disponible pour l'article '{self.item}' dans l'entrepôt source.")
+
     def save(self, *args, **kwargs):
-        # Logique pour mettre à jour les stocks uniquement si le transfert est approuvé
+        """Logique pour mettre à jour les stocks uniquement si le transfert est approuvé."""
         if self.status == self.STATUS_APPROVED and not self.approved_at:
             self.approved_at = timezone.now()  # Enregistrez la date d'approbation
-            # Mettez à jour les stocks ici (diminuer dans from_warehouse, augmenter dans to_warehouse)
+
+            # Mise à jour des stocks
+            try:
+                from_stock = Stock.objects.get(warehouse=self.from_warehouse, item=self.item)
+                to_stock, created = Stock.objects.get_or_create(warehouse=self.to_warehouse, item=self.item)
+
+                from_stock.quantity -= self.quantity
+                to_stock.quantity += self.quantity
+
+                from_stock.save()
+                to_stock.save()
+            except Stock.DoesNotExist:
+                raise ValidationError(f"Erreur lors de la mise à jour des stocks pour l'article '{self.item}'.")
+
         super().save(*args, **kwargs)
 
 
@@ -351,3 +390,17 @@ class ProductionStep(models.Model):
 
     def __str__(self):
         return f"{self.description} (sur {self.machine})"
+    
+
+class StockThreshold(models.Model):
+    """Seuil de stock pour un article."""
+    item = models.OneToOneField(Item, on_delete=models.CASCADE, verbose_name="Article")
+    min_quantity = models.PositiveIntegerField(verbose_name="Quantité minimale")
+    alert_sent = models.BooleanField(default=False, verbose_name="Alerte envoyée")
+
+    class Meta:
+        verbose_name = "Seuil de stock"
+        verbose_name_plural = "Seuils de stock"
+
+    def __str__(self):
+        return f"Seuil de stock pour {self.item} : {self.min_quantity}"

@@ -1,4 +1,6 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from django.core.exceptions import ValidationError
 from .models import *
 from .serializers import *
 from .permissions import IsWarehouseManager, IsCarrier
@@ -28,6 +30,12 @@ class StockTransferViewSet(viewsets.ModelViewSet):
     serializer_class = StockTransferSerializer
     permission_classes = [permissions.IsAuthenticated, IsWarehouseManager]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class CarrierViewSet(viewsets.ModelViewSet):
     queryset = Carrier.objects.all()
     serializer_class = CarrierSerializer
@@ -52,3 +60,9 @@ class ShipmentStatusUpdateViewSet(viewsets.ModelViewSet):
     queryset = ShipmentStatusUpdate.objects.all()
     serializer_class = ShipmentStatusUpdateSerializer
     permission_classes = [permissions.IsAuthenticated, IsCarrier]
+
+
+class StockThresholdViewSet(viewsets.ModelViewSet):
+    queryset = StockThreshold.objects.all()
+    serializer_class = StockThresholdSerializer
+    permission_classes = [permissions.IsAuthenticated, IsWarehouseManager]  # Ou une autre permission appropriée
