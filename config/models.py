@@ -21,3 +21,17 @@ class ExchangeRate(models.Model):
     def __str__(self):
         return f"{self.source_currency} -> {self.target_currency} : {self.rate}"
 
+
+class Period(models.Model):
+    """Période comptable (exercice)."""
+    name = models.CharField(max_length=50, verbose_name="Nom de l'exercice")
+    start_date = models.DateField(verbose_name="Date de début")
+    end_date = models.DateField(verbose_name="Date de fin")
+    is_closed = models.BooleanField(default=False, verbose_name="Clôturé")
+
+    class Meta:
+        verbose_name = "Période comptable"
+        verbose_name_plural = "Périodes comptables"
+
+    def __str__(self):
+        return self.name

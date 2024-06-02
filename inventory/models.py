@@ -6,6 +6,7 @@ from django.utils import timezone
 from djmoney.models.fields import MoneyField
 
 from config.models import ExchangeRate
+from groups.models import Category
 
 
 class Supplier(models.Model):
@@ -46,6 +47,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nom")
     specification = models.CharField(max_length=255, verbose_name="Spécification")
     code = models.CharField(max_length=190, unique=True, verbose_name="Code")
+    Category = models.ForeignKey(Category, on_delete=models.CASCADE)
     supplier = models.ManyToManyField(Supplier, verbose_name="Fournisseurs")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
     modified_at = models.DateTimeField(auto_now=True, verbose_name="Modifié le")

@@ -62,6 +62,10 @@ class RequisitionBudget(models.Model):
     requisition = models.OneToOneField(Requisition, on_delete=models.CASCADE, verbose_name="Demande")
     budget_item = models.ForeignKey(BudgetItem, on_delete=models.PROTECT, verbose_name="Ligne budgétaire")
 
+    class Meta:
+        verbose_name = "Lien demande-budget"
+        verbose_name_plural = "Liens demande-budget"
+
     def __str__(self):
         return f"Demande {self.requisition} liée au budget {self.budget_item.budget}"
 
@@ -69,4 +73,9 @@ class RequisitionBudget(models.Model):
         # Vérifiez si la devise de la demande correspond à celle du budget
         if self.requisition.amount.currency != self.budget_item.budget.amount_currency:
             raise ValueError("La devise de la demande doit correspondre à celle du budget.")
+
+        # Vérifiez si le montant de la demande ne dépasse pas le montant alloué dans la ligne budgétaire
+        if self.requisition.amount.amount > self.budget_item.amount.amount:
+            raise ValueError("Le montant de la demande dépasse le montant alloué dans le budget.")
+
         super().save(*args, **kwargs)

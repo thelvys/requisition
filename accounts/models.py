@@ -5,6 +5,8 @@ from django.db.models.signals import post_save
 
 from config import settings
 
+from groups.models import Department
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None):
         if not email:
@@ -49,17 +51,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
 
-class Department(models.Model):
-    dep_name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
-    main_dep = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    supervisor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="departments")
-    #members = models.ManyToManyField(settings.AUTH_USER_MODEL, through=Profile, related_name='departments')  # Utilisation de Profile comme table intermédiaire pour stocker le rôle de l'utilisateur dans le département
-    created_at = models.DateTimeField(auto_now_add=True, auto_now=False)
-    modified_at = models.DateTimeField(auto_now=True, auto_now_add=False)
-
-    def __str__(self):
-        return self.dep_name
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")

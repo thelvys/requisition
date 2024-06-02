@@ -5,7 +5,7 @@ from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 
 from config import settings
-from accounts.models import Department
+from groups.models import Department
 
 from inventory.models import Item
 

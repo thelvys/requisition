@@ -5,8 +5,7 @@ from treebeard.mp_tree import MP_Node
 from config import settings
 
 from config.models import ExchangeRate
-from requisitions.models import Payment
-from cashflow.models import AccountTransfer
+from cashflow.models import AccountTransfer, Payment
 
 
 class Account(MP_Node):
